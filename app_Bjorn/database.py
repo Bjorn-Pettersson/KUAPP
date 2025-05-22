@@ -1,32 +1,49 @@
 import psycopg2
 import os
+import pandas as pd
 
-# Try to get from system enviroment variable
-# Set your Postgres user and password as second arguments of these two next function calls
+# Environment variable fallbacks
 user = os.environ.get('PGUSER', 'postgres')
 password = os.environ.get('PGPASSWORD', 'lenses')
 host = os.environ.get('HOST', '127.0.0.1')
+dbname = 'kuappdb'
 
 def db_connection():
-    db = "dbname='todo' user=" + user + " host=" + host + " password =" + password
-    conn = psycopg2.connect(db)
-
-    return conn
+    conn_str = f"dbname='{dbname}' user={user} host={host} password={password}"
+    return psycopg2.connect(conn_str)
 
 def init_db():
     conn = db_connection()
     cur = conn.cursor()
-    cur.execute('''CREATE TABLE IF NOT EXISTS categories (id SERIAL PRIMARY KEY, category_name TEXT NOT NULL UNIQUE)''')
-    cur.execute('''CREATE TABLE IF NOT EXISTS todos (id SERIAL PRIMARY KEY, todo_text TEXT NOT NULL UNIQUE, category_id INTEGER NOT NULL, FOREIGN KEY(category_id) REFERENCES categories(id))''')
+
+    # Create table if it doesn't exist
+    cur.execute('''
+        CREATE TABLE IF NOT EXISTS courses (
+            id SERIAL PRIMARY KEY,
+            code TEXT NOT NULL UNIQUE,
+            name TEXT NOT NULL
+        )
+    ''')
     conn.commit()
 
-    categories = ['DIS', 'House chores']
-    for category in categories:
-        cur.execute('INSERT INTO categories (category_name) VALUES (%s) ON CONFLICT DO NOTHING', (category,))
+    # Check if table is empty
+    cur.execute('SELECT COUNT(*) FROM courses')
+    row_count = cur.fetchone()[0]
 
-    todos = [('Assignment 1', 'DIS'), ('Groceries', 'House chores'), ('Assignment 2', 'DIS'), ('Project', 'DIS')]
-    for (todo, category) in todos:
-        cur.execute('INSERT INTO todos (todo_text, category_id) VALUES (%s, (SELECT id FROM categories WHERE category_name = %s)) ON CONFLICT DO NOTHING', (todo, category))
+    if row_count == 0:
+        print("Courses table is empty. Loading data from CSV...")
+        df = pd.read_csv('data/ku_courses_reduced.csv')  # adjust path if needed
 
-    conn.commit()
+        for _, row in df.iterrows():
+            cur.execute('''
+                INSERT INTO courses (code, name)
+                VALUES (%s, %s)
+                ON CONFLICT (code) DO NOTHING
+            ''', (row['code'], row['name']))
+
+        conn.commit()
+        print(f"Inserted {len(df)} rows.")
+    else:
+        print("Courses table already contains data. Skipping insert.")
+
     conn.close()

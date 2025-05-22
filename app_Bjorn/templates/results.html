@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Results for "{{ search_term }}"</h2>
+{% if results %}
+<ul class="list-group">
+    {% for course in results %}
+    <li class="list-group-item">
+        <strong>{{ course.course_name }}</strong><br>
+        {{ course.description }}<br>
+        Credits: {{ course.credits }}
+    </li>
+    {% endfor %}
+</ul>
+{% else %}
+<p>No courses found.</p>
+{% endif %}
+<a href="/" class="btn btn-link mt-3">Back to Search</a>
+{% endblock %}
