@@ -1,0 +1,17 @@
+<!doctype html>
+<title>courses:</title>
+
+<a href="{{ url_for('category.categories') }}" class="register-link">Courses</a>
+
+<table>
+    <tr>
+        <th>Course ID</th>
+        <th>Name</th>
+        <th>Term</th>
+    </tr>
+    {% for course in courses %}
+        <tr>
+        <td>{{ course.id }}</td> <td>{{ course.name }}</td> <td>{{ course.term }}</td>
+        </tr>
+    {% endfor %}
+</table>
