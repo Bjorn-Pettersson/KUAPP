@@ -1,0 +1,26 @@
+<!doctype html>
+<title>Todo:</title>
+
+<a href="{{ url_for('category.categories') }}" class="register-link">Categories</a>
+
+<form method="POST" action="/todo">
+    <input type="text" name="new_todo" placeholder="Add another todo here" class="form-input" required>
+    Category<SELECT name="category_todo">
+    {% for category in categories %}
+        <OPTION value={{category.id}}>{{category.name}}</option>
+    {% endfor %}
+    </SELECT>
+    <input type="submit" value="Add" class="btn">
+</form>
+
+<table>
+    <tr>
+        <th>TODO</th>
+        <th>Category</th>
+    </tr>
+    {% for todo in todos %}
+        <tr>
+        <td>{{ todo.text }}</td> <td>{{ todo.category.name }}</td>
+        </tr>
+    {% endfor %}
+</table>
