@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>KU Course Review</title>
+</head>
+<body>
+  <h1>KU Course Review</h1>
+
+  <form method="POST" action="{{ url_for('course.submit') }}">
+    <textarea name="review" placeholder="Write your review"></textarea><br>
+    <input type="number" name="score" placeholder="Enter score"><br>
+    <button type="submit">Submit review</button>
+  </form>
+
+  <h2>Reviews</h2>
+  <ul>
+    {% for r in reviews %}
+      <li>{{ r.review }} - Score: {{ r.score }}</li>
+    {% endfor %}
+  </ul>
+</body>
+</html>
