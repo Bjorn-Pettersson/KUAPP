@@ -1,10 +1,11 @@
 import psycopg2
 import os
+import pandas as pd
 
 # Try to get from system enviroment variable
 # Set your Postgres user and password as second arguments of these two next function calls
 user = os.environ.get('PGUSER', 'postgres')
-password = os.environ.get('PGPASSWORD', 'lenses')
+password = os.environ.get('PGPASSWORD', 'minkonto1')
 host = os.environ.get('HOST', '127.0.0.1')
 
 def db_connection():
@@ -18,7 +19,19 @@ def init_db():
     cur = conn.cursor()
     cur.execute('''CREATE TABLE IF NOT EXISTS categories (id SERIAL PRIMARY KEY, category_name TEXT NOT NULL UNIQUE)''')
     cur.execute('''CREATE TABLE IF NOT EXISTS todos (id SERIAL PRIMARY KEY, todo_text TEXT NOT NULL UNIQUE, category_id INTEGER NOT NULL, FOREIGN KEY(category_id) REFERENCES categories(id))''')
+    cur.execute('''CREATE TABLE IF NOT EXISTS COURSE_AT_YEAR (course_ID VARCHAR(10) NOT NULL, course_name VARCHAR(100), term VARCHAR(6), PRIMARY KEY (course_ID, term))''')
     conn.commit()
+
+    df = pd.read_csv(os.path.join('data', 'combined.csv'))
+    for _, row in df.iterrows():
+        cur.execute(
+            '''
+            INSERT INTO COURSE_AT_YEAR (course_ID, course_name, term)
+            VALUES (%s, %s, %s)
+            ON CONFLICT DO NOTHING
+            ''',
+            (row['code_kuh'], row['title_kuh'], row['term'])
+        )
 
     categories = ['DIS', 'House chores']
     for category in categories:
