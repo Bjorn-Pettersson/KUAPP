@@ -13,6 +13,25 @@ def db_connection():
     conn_str = f"dbname='{dbname}' user={user} host={host} password={password}"
     return psycopg2.connect(conn_str)
 
+def update_course_overview():
+    conn = db_connection()
+    cur = conn.cursor()
+
+    cur.execute("""
+        INSERT INTO course_overview (course_code, avg_avg_rating)
+        SELECT
+            course_code,
+            AVG(avg_rating) AS avg_avg_rating
+        FROM courses
+        WHERE avg_rating IS NOT NULL
+        GROUP BY course_code
+        ON CONFLICT (course_code)
+        DO UPDATE SET avg_avg_rating = EXCLUDED.avg_avg_rating;
+    """)
+
+    conn.commit()
+    conn.close()
+
 
 # ── initialise / refresh the DB ────────────────────────────────────────────────
 def init_db():
@@ -102,11 +121,11 @@ def init_db():
 
     cur.execute("""
         CREATE TABLE course_overview (
-            id SERIAL PRIMARY KEY,
-            course_code TEXT,
+            course_code TEXT PRIMARY KEY,
             course_term TEXT,
             year INTEGER,
             avg_grade NUMERIC,
+            avg_avg_rating NUMERIC,
             FOREIGN KEY (course_code, course_term) REFERENCES courses(code, term) ON DELETE CASCADE
         );
     """)
