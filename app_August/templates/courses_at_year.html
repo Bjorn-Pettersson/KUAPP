@@ -8,10 +8,23 @@
         <th>Course ID</th>
         <th>Term</th>
         <th>Blok</th>
+        <th>Rate this course</th>
     </tr>
     {% for course in courses %}
         <tr>
-        <td>{{ course.id }}</td> <td>{{ course.term }}</td> <td>{{ course.blok }}</td>
+            <td>{{ course.id }}</td>
+            <td>{{ course.term }}</td>
+            <td>{{ course.blok }}</td>
+            <td>
+                <form method="POST" action="{{ url_for('courses_at_year.courses') }}">
+                    <input type="hidden" name="kursus_id" value="{{ course.id }}">
+                    <input type="hidden" name="term" value="{{ course.term }}">
+                    <input type="number" name="score" min="1" max="10" placeholder="Score" required>
+                    <input type="text" name="comment" placeholder="Comment">
+                    <input type="text" name="KU_ID" placeholder="ID">
+                    <input type="submit" value="Rate">
+                </form>
+            </td>
         </tr>
     {% endfor %}
 </table>
