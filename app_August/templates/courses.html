@@ -3,6 +3,9 @@
 
 <a href="{{ url_for('category.categories') }}" class="register-link">Courses</a>
 
+<a href="{{ url_for('courses.courses', sort='rating', desc='0') }}">Sort by Rating (Asc)</a> |
+<a href="{{ url_for('courses.courses', sort='rating', desc='1') }}">Sort by Rating (Desc)</a>
+
 <table>
     <tr>
         <th>Course ID</th>

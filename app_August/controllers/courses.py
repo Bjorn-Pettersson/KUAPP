@@ -6,6 +6,11 @@ bp = Blueprint('courses', __name__, url_prefix='/')
 
 @bp.route('/courses', methods=['GET', 'POST'])
 def courses():
-    courses = list_courses()
+    sort = request.args.get('sort')
+    desc = request.args.get('desc', '1') == '1'
+    if sort == 'rating':
+        courses = list_courses(sort_by_rating=True, descending=desc)
+    else:
+        courses = list_courses()
 
     return render_template('courses.html', courses=courses)
