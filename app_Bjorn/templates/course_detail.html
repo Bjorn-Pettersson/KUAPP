@@ -7,6 +7,11 @@
 <body class="p-4">
     <div class="container">
         <h1>{{ course.name }}</h1>
+        {% if course.avg_rating %}
+            <div class="alert alert-info">
+                <strong>Average Rating:</strong> {{ course.avg_rating|round(2) }}/5
+            </div>
+        {% endif %}
 
         <p><strong>Code:</strong> {{ course.code }}</p>
         <p><strong>Institute:</strong> {{ course.institute }}</p>
@@ -52,6 +57,8 @@
                 </div>
             {% endfor %}
         {% endif %}
+
+
     </div>
 </body>
 </html>

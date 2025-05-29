@@ -74,7 +74,8 @@ def init_db():
             faculty_kuc TEXT,
             course_coordinators TEXT,
             last_modified TEXT,
-            code_kuc TEXT
+            code_kuc TEXT,
+            avg_rating NUMERIC
         );
     """)
 
