@@ -23,7 +23,7 @@ def init_db():
     cur.execute("""
         DROP TABLE IF EXISTS rating          CASCADE;
         DROP TABLE IF EXISTS coordinates     CASCADE;
-        DROP TABLE IF EXISTS course_at_year  CASCADE;
+        DROP TABLE IF EXISTS course_overview  CASCADE;
         DROP TABLE IF EXISTS course_coordinator CASCADE;
         DROP TABLE IF EXISTS users           CASCADE;
         DROP TABLE IF EXISTS courses         CASCADE;
@@ -90,18 +90,18 @@ def init_db():
     # 2.3  rating  (many-to-many between users and courses)
     cur.execute("""
         CREATE TABLE rating (
-            id SERIAL PRIMARY KEY,
             course_code TEXT REFERENCES courses(code) ON DELETE CASCADE,
             ku_id       TEXT REFERENCES users(ku_id)  ON DELETE CASCADE,
             score       SMALLINT CHECK (score BETWEEN 1 AND 5),
             comment     TEXT,
-            created_at  TIMESTAMPTZ DEFAULT NOW()
+            created_at  TIMESTAMPTZ DEFAULT NOW(),
+            PRIMARY KEY (course_code, ku_id)
         );
     """)
 
-    # 2.4  course_at_year  (year-specific aggregates)
+    # 2.4  course_overview  (year-specific aggregates)
     cur.execute("""
-        CREATE TABLE course_at_year (
+        CREATE TABLE course_overview (
             id SERIAL PRIMARY KEY,
             course_code TEXT REFERENCES courses(code) ON DELETE CASCADE,
             year        INTEGER,

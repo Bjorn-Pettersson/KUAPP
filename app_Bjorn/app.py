@@ -1,6 +1,7 @@
 import re
 from flask import Flask, render_template, request, redirect, url_for
 from database import db_connection, init_db
+import psycopg2
 
 app = Flask(__name__)
 init_db()
@@ -21,16 +22,24 @@ def course_detail(code):
         if not re.match(r'^[a-zA-Z]{3}[0-9]{3}$', ku_id):
             error = "Invalid KU ID. Must be 3 letters followed by 3 digits (e.g., zts900)."
         else:
-            # Ensure user exists
-            cur.execute("INSERT INTO users (ku_id) VALUES (%s) ON CONFLICT (ku_id) DO NOTHING", (ku_id,))
+            try:
+                # Ensure user exists
+                cur.execute("INSERT INTO users (ku_id) VALUES (%s) ON CONFLICT (ku_id) DO NOTHING", (ku_id,))
 
-            # Insert new rating
-            cur.execute('''
-                INSERT INTO rating (course_code, ku_id, score, comment)
-                VALUES (%s, %s, %s, %s)
-            ''', (code, ku_id, rating, comment))
-            conn.commit()
-            return redirect(url_for('course_detail', code=code))
+                # Insert new rating (can raise UniqueViolation)
+                cur.execute('''
+                    INSERT INTO rating (course_code, ku_id, score, comment)
+                    VALUES (%s, %s, %s, %s)
+                ''', (code, ku_id, rating, comment))
+                conn.commit()
+                return redirect(url_for('course_detail', code=code))
+
+            except psycopg2.errors.UniqueViolation:
+                conn.rollback()
+                error = "You have already submitted a rating for this course."
+            except Exception as e:
+                conn.rollback()
+                error = f"An unexpected error occurred: {str(e)}"
 
     # Fetch course
     cur.execute("SELECT * FROM courses WHERE code = %s", (code,))
