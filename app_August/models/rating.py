@@ -11,10 +11,18 @@ class Rating:
         self.score = score
         self.comment = comment
 
-def list_ratings():
+def list_ratings(search_term=None):
     conn = db_connection()
     cur = conn.cursor()
-    cur.execute("SELECT KU_ID, KURSUS_ID, term, time_stamp, score, comment FROM RATING")
+    if search_term:
+        cur.execute("""
+            SELECT R.KU_ID, R.KURSUS_ID, R.term, R.time_stamp, R.score, R.comment
+            FROM RATING R
+            JOIN COURSES C ON R.KURSUS_ID = C.KURSUS_ID
+            WHERE C.coursename ILIKE %s OR R.KURSUS_ID ILIKE %s
+        """, (f'%{search_term}%', f'%{search_term}%'))
+    else:
+        cur.execute("SELECT KU_ID, KURSUS_ID, term, time_stamp, score, comment FROM RATING")
     db_ratings = cur.fetchall()
     ratings = []
     for row in db_ratings:
