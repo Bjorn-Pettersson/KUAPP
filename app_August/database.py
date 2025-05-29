@@ -19,18 +19,87 @@ def init_db():
     cur = conn.cursor()
     cur.execute('''CREATE TABLE IF NOT EXISTS categories (id SERIAL PRIMARY KEY, category_name TEXT NOT NULL UNIQUE)''')
     cur.execute('''CREATE TABLE IF NOT EXISTS todos (id SERIAL PRIMARY KEY, todo_text TEXT NOT NULL UNIQUE, category_id INTEGER NOT NULL, FOREIGN KEY(category_id) REFERENCES categories(id))''')
-    cur.execute('''CREATE TABLE IF NOT EXISTS COURSE_AT_YEAR (course_ID VARCHAR(10) NOT NULL, course_name VARCHAR(100), term VARCHAR(6), PRIMARY KEY (course_ID, term))''')
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS USERS (
+            KU_ID CHAR(6),
+            username CHAR(40),
+            PRIMARY KEY (KU_ID)
+        );
+    """)
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS COURSES (
+            KURSUS_ID CHAR(10),
+            coursename VARCHAR(70),
+            description VARCHAR(2000),
+            PRIMARY KEY (KURSUS_ID)
+        );
+    """)
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS COURSE_COORDINATOR (
+            CC_ID SERIAL PRIMARY KEY,
+            name VARCHAR(40)
+        );
+    """)
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS COURSE_AT_YEAR (
+            KURSUS_ID CHAR(10),
+            term VARCHAR(6),
+            blok CHAR(1),
+            PRIMARY KEY (KURSUS_ID, term),
+            FOREIGN KEY (KURSUS_ID) REFERENCES COURSES(KURSUS_ID)
+                ON UPDATE CASCADE
+        );
+    """)
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS RATING (
+            KU_ID CHAR(6),
+            KURSUS_ID CHAR(10),
+            term VARCHAR(6),
+            time_stamp DATE,
+            score INTEGER,
+            comment VARCHAR(250),
+            PRIMARY KEY (KU_ID, KURSUS_ID, term),
+            FOREIGN KEY (KU_ID) REFERENCES USERS(KU_ID)
+                ON UPDATE CASCADE
+                ON DELETE SET NULL,
+            FOREIGN KEY (KURSUS_ID, term) REFERENCES COURSE_AT_YEAR(KURSUS_ID, term)
+                ON UPDATE CASCADE
+        );
+    """)
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS COORDINATES (
+            KURSUS_ID CHAR(10),
+            term VARCHAR(6),
+            CC_ID INTEGER,
+            PRIMARY KEY (KURSUS_ID, term, CC_ID),
+            FOREIGN KEY (KURSUS_ID, term) REFERENCES COURSE_AT_YEAR(KURSUS_ID, term)
+                ON UPDATE CASCADE,
+            FOREIGN KEY (CC_ID) REFERENCES COURSE_COORDINATOR(CC_ID)
+        );
+    """)
+    
+    
     conn.commit()
 
     df = pd.read_csv(os.path.join('data', 'combined.csv'))
-    for _, row in df.iterrows():
+    df2 = pd.read_csv(os.path.join('data', 'unique_courses.csv'))
+    for _, row in df2.iterrows():
         cur.execute(
             '''
-            INSERT INTO COURSE_AT_YEAR (course_ID, course_name, term)
+            INSERT INTO COURSES (KURSUS_ID, coursename, description)
             VALUES (%s, %s, %s)
             ON CONFLICT DO NOTHING
             ''',
-            (row['code_kuh'], row['title_kuh'], row['term'])
+            (row['code_kuc'], row['title_kuh'], row['content'])
+        )
+    for _, row in df.iterrows():
+        cur.execute(
+            '''
+            INSERT INTO COURSE_AT_YEAR (KURSUS_ID, term, blok)
+            VALUES (%s, %s, %s)
+            ON CONFLICT DO NOTHING
+            ''',
+            (row['code_kuc'], row['term'], row['schedule'])
         )
 
     categories = ['DIS', 'House chores']
