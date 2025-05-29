@@ -16,13 +16,14 @@
             <h2>Results for "{{ search_term }}"</h2>
             {% if results %}
                 <ul class="list-group">
-                {% for code, name in results %}
+                {% for code, name, term in results %}
                     <li class="list-group-item">
                         <a href="{{ url_for('course_detail', code=code) }}" class="text-decoration-none">
-                            <strong>{{ code }}</strong>: {{ name }}
+                            <strong>{{ term }}</strong> – <strong>{{ code }}</strong>: {{ name }}
                         </a>
                     </li>
                 {% endfor %}
+
                 </ul>
             {% else %}
                 <p>No results found.</p>

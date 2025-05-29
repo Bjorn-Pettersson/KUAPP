@@ -21,29 +21,27 @@ def init_db():
 
     # ── 1. Drop old tables in dependency-safe order ────────────────────────────
     cur.execute("""
-        DROP TABLE IF EXISTS rating          CASCADE;
-        DROP TABLE IF EXISTS coordinates     CASCADE;
-        DROP TABLE IF EXISTS course_overview  CASCADE;
+        DROP TABLE IF EXISTS rating CASCADE;
+        DROP TABLE IF EXISTS coordinates CASCADE;
+        DROP TABLE IF EXISTS course_overview CASCADE;
         DROP TABLE IF EXISTS course_coordinator CASCADE;
-        DROP TABLE IF EXISTS users           CASCADE;
-        DROP TABLE IF EXISTS courses         CASCADE;
+        DROP TABLE IF EXISTS users CASCADE;
+        DROP TABLE IF EXISTS courses CASCADE;
     """)
     conn.commit()
 
     # ── 2. Re-create tables ----------------------------------------------------
 
-    # 2.1  courses  (master list, keyed by KU-id)
     cur.execute("""
         CREATE TABLE courses (
-            code TEXT PRIMARY KEY,          -- e.g. NDAK15006U
+            code TEXT,
+            term TEXT,
             name TEXT NOT NULL,
             description TEXT,
 
-            -- columns from ku_courses_reduced_2.csv
             title_kuh TEXT,
             faculty_kuh TEXT,
             institute TEXT,
-            term TEXT,
             ects_kuh TEXT,
             url_kuh TEXT,
             exam TEXT,
@@ -75,11 +73,12 @@ def init_db():
             course_coordinators TEXT,
             last_modified TEXT,
             code_kuc TEXT,
-            avg_rating NUMERIC
+            avg_rating NUMERIC,
+
+            PRIMARY KEY (code, term)
         );
     """)
 
-    # 2.2  users  (KU-ids that match 3 letters + 3 digits)
     cur.execute("""
         CREATE TABLE users (
             ku_id TEXT PRIMARY KEY,
@@ -88,52 +87,55 @@ def init_db():
         );
     """)
 
-    # 2.3  rating  (many-to-many between users and courses)
     cur.execute("""
         CREATE TABLE rating (
-            course_code TEXT REFERENCES courses(code) ON DELETE CASCADE,
-            ku_id       TEXT REFERENCES users(ku_id)  ON DELETE CASCADE,
-            score       SMALLINT CHECK (score BETWEEN 1 AND 5),
-            comment     TEXT,
-            created_at  TIMESTAMPTZ DEFAULT NOW(),
-            PRIMARY KEY (course_code, ku_id)
+            course_code TEXT,
+            course_term TEXT,
+            ku_id TEXT REFERENCES users(ku_id) ON DELETE CASCADE,
+            score SMALLINT CHECK (score BETWEEN 1 AND 5),
+            comment TEXT,
+            created_at TIMESTAMPTZ DEFAULT NOW(),
+            PRIMARY KEY (course_code, course_term, ku_id),
+            FOREIGN KEY (course_code, course_term) REFERENCES courses(code, term) ON DELETE CASCADE
         );
     """)
 
-    # 2.4  course_overview  (year-specific aggregates)
     cur.execute("""
         CREATE TABLE course_overview (
             id SERIAL PRIMARY KEY,
-            course_code TEXT REFERENCES courses(code) ON DELETE CASCADE,
-            year        INTEGER,
-            avg_grade   NUMERIC
+            course_code TEXT,
+            course_term TEXT,
+            year INTEGER,
+            avg_grade NUMERIC,
+            FOREIGN KEY (course_code, course_term) REFERENCES courses(code, term) ON DELETE CASCADE
         );
     """)
 
-    # 2.5  course_coordinator  + coordinates (many-to-many)
     cur.execute("""
         CREATE TABLE course_coordinator (
             id SERIAL PRIMARY KEY,
             name TEXT
         );
         CREATE TABLE coordinates (
-            course_code    TEXT REFERENCES courses(code)            ON DELETE CASCADE,
+            course_code TEXT,
+            course_term TEXT,
             coordinator_id INTEGER REFERENCES course_coordinator(id) ON DELETE CASCADE,
-            PRIMARY KEY (course_code, coordinator_id)
+            PRIMARY KEY (course_code, course_term, coordinator_id),
+            FOREIGN KEY (course_code, course_term) REFERENCES courses(code, term) ON DELETE CASCADE
         );
     """)
     conn.commit()
 
-    # ── 3. Load courses from CSV  ──────────────────────────────────────────────
-    df = pd.read_csv("data/ku_courses_reduced_2.csv")   # adjust path if needed
-    df = df.where(pd.notnull(df), None)                 # NaN → None
+    # ── 3. Load courses from CSV ───────────────────────────────────────────────
+    df = pd.read_csv("data/df_clean.csv")
+    df = df.where(pd.notnull(df), None)  # NaN → None
 
     for _, row in df.iterrows():
         cur.execute(
             f"""
             INSERT INTO courses ({', '.join(df.columns)})
             VALUES ({', '.join(['%s'] * len(df.columns))})
-            ON CONFLICT (code) DO NOTHING;
+            ON CONFLICT (code, term) DO NOTHING;
             """,
             tuple(row[col] for col in df.columns)
         )

@@ -90,11 +90,14 @@ def index():
         search_term = request.form.get('search', '')
         conn = db_connection()
         cur = conn.cursor()
+        # In your `index()` route
         cur.execute("""
-            SELECT code, name FROM courses
+            SELECT code, name, term FROM courses
             WHERE name ILIKE %s OR code ILIKE %s
+            ORDER BY term DESC
         """, (f'%{search_term}%', f'%{search_term}%'))
         results = cur.fetchall()
+
         conn.close()
 
     return render_template('index.html', results=results, search_term=search_term)
