@@ -36,8 +36,9 @@ def init_db():
     """)
     cur.execute("""
         CREATE TABLE IF NOT EXISTS COURSE_COORDINATOR (
-            CC_ID SERIAL PRIMARY KEY,
-            name VARCHAR(40)
+            cc_id CHAR(29),
+            name VARCHAR(40),
+            PRIMARY KEY (cc_id)
         );
     """)
     cur.execute("""
@@ -70,18 +71,18 @@ def init_db():
         CREATE TABLE IF NOT EXISTS COORDINATES (
             KURSUS_ID CHAR(10),
             term VARCHAR(6),
-            CC_ID INTEGER,
-            PRIMARY KEY (KURSUS_ID, term, CC_ID),
+            cc_id CHAR(28),
+            PRIMARY KEY (KURSUS_ID, term, cc_id),
             FOREIGN KEY (KURSUS_ID, term) REFERENCES COURSE_AT_YEAR(KURSUS_ID, term)
                 ON UPDATE CASCADE,
-            FOREIGN KEY (CC_ID) REFERENCES COURSE_COORDINATOR(CC_ID)
+            FOREIGN KEY (cc_id) REFERENCES COURSE_COORDINATOR(cc_id)
         );
     """)
     
     
     conn.commit()
 
-    df = pd.read_csv(os.path.join('data', 'combined.csv'))
+    df = pd.read_csv(os.path.join('data', 'coordinator_split.csv'))
     df2 = pd.read_csv(os.path.join('data', 'unique_courses.csv'))
     for _, row in df2.iterrows():
         cur.execute(
@@ -95,11 +96,29 @@ def init_db():
     for _, row in df.iterrows():
         cur.execute(
             '''
+            INSERT INTO COURSE_COORDINATOR (cc_id, name)
+            VALUES (%s, %s)
+            ON CONFLICT DO NOTHING
+            ''',
+            (row['course_coordinator_id'], row['course_coordinator_name'])
+        )
+    for _, row in df.iterrows():
+        cur.execute(
+            '''
             INSERT INTO COURSE_AT_YEAR (KURSUS_ID, term, blok)
             VALUES (%s, %s, %s)
             ON CONFLICT DO NOTHING
             ''',
             (row['code_kuc'], row['term'], row['schedule'])
+        )
+    for _, row in df.iterrows():
+        cur.execute(
+            '''
+            INSERT INTO COORDINATES (KURSUS_ID, term, cc_id)
+            VALUES (%s, %s, %s)
+            ON CONFLICT DO NOTHING
+            ''',
+            (row['code_kuc'],row['term'], row['course_coordinator_id'])
         )
 
     categories = ['DIS', 'House chores']
