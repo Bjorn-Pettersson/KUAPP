@@ -1,6 +1,6 @@
 from flask import Flask
 from database import init_db
-from controllers import todo, category, courses_at_year
+from controllers import todo, category, courses_at_year, rating
 
 init_db()
 
@@ -13,3 +13,4 @@ def hello_world():
 app.register_blueprint(todo.bp)
 app.register_blueprint(category.bp)
 app.register_blueprint(courses_at_year.bp)
+app.register_blueprint(rating.bp)
