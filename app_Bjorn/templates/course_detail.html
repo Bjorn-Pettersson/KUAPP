@@ -7,18 +7,26 @@
 <body class="p-4">
     <div class="container">
         <h1>{{ course.name }}</h1>
+
         <p><strong>Code:</strong> {{ course.code }}</p>
         <p><strong>Institute:</strong> {{ course.institute }}</p>
         <p><strong>Department:</strong> {{ course.department }}</p>
         <p><strong>Language:</strong> {{ course.language }}</p>
         <p><strong>ECTS:</strong> {{ course.ects_kuc or course.ects_kuh }}</p>
+
         <p><strong>Content:</strong></p>
         <div style="white-space: pre-wrap;">{{ course.content }}</div>
+
         <p><a href="{{ course.url_kuc }}" target="_blank">Go to official course page</a></p>
 
         <hr>
         <h2>Rate & Comment</h2>
+
         <form method="POST">
+            <div class="mb-3">
+                <label for="ku_id" class="form-label">KU ID (e.g. zts900)</label>
+                <input type="text" name="ku_id" id="ku_id" class="form-control" required>
+            </div>
             <div class="mb-3">
                 <label for="rating" class="form-label">Rating (1–5)</label>
                 <input type="number" min="1" max="5" class="form-control" name="rating" id="rating" required>
@@ -30,12 +38,19 @@
             <button type="submit" class="btn btn-success">Submit</button>
         </form>
 
-        {% if course.user_comment %}
+        {% if error %}
+            <div class="alert alert-danger mt-3">{{ error }}</div>
+        {% endif %}
+
+        {% if ratings %}
             <hr>
-            <h3>Your Submitted Feedback</h3>
-            <p><strong>Rating:</strong> {{ course.user_rating }}/5</p>
-            <p><strong>Comment:</strong></p>
-            <div style="white-space: pre-wrap;">{{ course.user_comment }}</div>
+            <h3>All Feedback</h3>
+            {% for ku_id, score, comment, created_at in ratings %}
+                <div class="mb-3 p-3 border rounded">
+                    <p><strong>{{ ku_id }}</strong> rated <strong>{{ score }}/5</strong> on {{ created_at.strftime('%Y-%m-%d') }}</p>
+                    <p style="white-space: pre-wrap;">{{ comment }}</p>
+                </div>
+            {% endfor %}
         {% endif %}
     </div>
 </body>

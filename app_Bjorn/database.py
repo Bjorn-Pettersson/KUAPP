@@ -8,27 +8,38 @@ password = os.environ.get('PGPASSWORD', 'lenses')
 host     = os.environ.get('HOST',       '127.0.0.1')
 dbname   = 'kuappdb'
 
+
 def db_connection():
     conn_str = f"dbname='{dbname}' user={user} host={host} password={password}"
     return psycopg2.connect(conn_str)
+
 
 # ── initialise / refresh the DB ────────────────────────────────────────────────
 def init_db():
     conn = db_connection()
     cur  = conn.cursor()
 
-    # 1. Drop the table if it already exists
-    cur.execute('DROP TABLE IF EXISTS courses;')
+    # ── 1. Drop old tables in dependency-safe order ────────────────────────────
+    cur.execute("""
+        DROP TABLE IF EXISTS rating          CASCADE;
+        DROP TABLE IF EXISTS coordinates     CASCADE;
+        DROP TABLE IF EXISTS course_at_year  CASCADE;
+        DROP TABLE IF EXISTS course_coordinator CASCADE;
+        DROP TABLE IF EXISTS users           CASCADE;
+        DROP TABLE IF EXISTS courses         CASCADE;
+    """)
     conn.commit()
 
-    # 2. Re-create it with ALL required columns
-    cur.execute('''
-        CREATE TABLE courses (
-            id SERIAL PRIMARY KEY,
-            code TEXT NOT NULL UNIQUE,
-            name TEXT NOT NULL,
+    # ── 2. Re-create tables ----------------------------------------------------
 
-            -- columns coming from ku_courses_reduced_2.csv
+    # 2.1  courses  (master list, keyed by KU-id)
+    cur.execute("""
+        CREATE TABLE courses (
+            code TEXT PRIMARY KEY,          -- e.g. NDAK15006U
+            name TEXT NOT NULL,
+            description TEXT,
+
+            -- columns from ku_courses_reduced_2.csv
             title_kuh TEXT,
             faculty_kuh TEXT,
             institute TEXT,
@@ -63,43 +74,73 @@ def init_db():
             faculty_kuc TEXT,
             course_coordinators TEXT,
             last_modified TEXT,
-            code_kuc TEXT,
-
-            -- user-feedback fields (start out NULL)
-            user_rating INTEGER,
-            user_comment TEXT
+            code_kuc TEXT
         );
-    ''')
+    """)
+
+    # 2.2  users  (KU-ids that match 3 letters + 3 digits)
+    cur.execute("""
+        CREATE TABLE users (
+            ku_id TEXT PRIMARY KEY,
+            full_name TEXT,
+            CONSTRAINT ku_id_format CHECK (ku_id ~ '^[A-Za-z]{3}[0-9]{3}$')
+        );
+    """)
+
+    # 2.3  rating  (many-to-many between users and courses)
+    cur.execute("""
+        CREATE TABLE rating (
+            id SERIAL PRIMARY KEY,
+            course_code TEXT REFERENCES courses(code) ON DELETE CASCADE,
+            ku_id       TEXT REFERENCES users(ku_id)  ON DELETE CASCADE,
+            score       SMALLINT CHECK (score BETWEEN 1 AND 5),
+            comment     TEXT,
+            created_at  TIMESTAMPTZ DEFAULT NOW()
+        );
+    """)
+
+    # 2.4  course_at_year  (year-specific aggregates)
+    cur.execute("""
+        CREATE TABLE course_at_year (
+            id SERIAL PRIMARY KEY,
+            course_code TEXT REFERENCES courses(code) ON DELETE CASCADE,
+            year        INTEGER,
+            avg_grade   NUMERIC
+        );
+    """)
+
+    # 2.5  course_coordinator  + coordinates (many-to-many)
+    cur.execute("""
+        CREATE TABLE course_coordinator (
+            id SERIAL PRIMARY KEY,
+            name TEXT
+        );
+        CREATE TABLE coordinates (
+            course_code    TEXT REFERENCES courses(code)            ON DELETE CASCADE,
+            coordinator_id INTEGER REFERENCES course_coordinator(id) ON DELETE CASCADE,
+            PRIMARY KEY (course_code, coordinator_id)
+        );
+    """)
     conn.commit()
 
-    # 3. Load the CSV and insert its data  (feedback columns are left NULL)
-    df = pd.read_csv('data/ku_courses_reduced_2.csv')   # adjust path if needed
+    # ── 3. Load courses from CSV  ──────────────────────────────────────────────
+    df = pd.read_csv("data/ku_courses_reduced_2.csv")   # adjust path if needed
     df = df.where(pd.notnull(df), None)                 # NaN → None
 
     for _, row in df.iterrows():
-        cur.execute('''
-            INSERT INTO courses (
-                code, name, title_kuh, faculty_kuh, institute, term,
-                ects_kuh, url_kuh, exam, re_exam, code_kuh, url_kuc, volume,
-                education, content, learning_outcome, literature,
-                recommended_prereq, teaching_methods, workload, feedback_form,
-                signup, exam_html, language, course_code, ects_kuc, level,
-                duration, placement, schedule, capacity, study_board,
-                department, faculty_kuc, course_coordinators, last_modified,
-                code_kuc
-            ) VALUES (
-                %s, %s, %s, %s, %s, %s,
-                %s, %s, %s, %s, %s, %s, %s,
-                %s, %s, %s, %s,
-                %s, %s, %s, %s,
-                %s, %s, %s, %s, %s, %s,
-                %s, %s, %s, %s, %s,
-                %s, %s, %s, %s,
-                %s
-            )
+        cur.execute(
+            f"""
+            INSERT INTO courses ({', '.join(df.columns)})
+            VALUES ({', '.join(['%s'] * len(df.columns))})
             ON CONFLICT (code) DO NOTHING;
-        ''', tuple(row[col] for col in df.columns))
+            """,
+            tuple(row[col] for col in df.columns)
+        )
 
     conn.commit()
     conn.close()
-    print(f"Inserted {len(df)} rows into extended courses table.")
+    print(f"Inserted {len(df)} rows into courses table.")
+
+
+if __name__ == "__main__":
+    init_db()
