@@ -2,32 +2,33 @@ import psycopg2
 import os
 import pandas as pd
 
-# Environment variable fallbacks
-user = os.environ.get('PGUSER', 'postgres')
+# ── connection parameters ──────────────────────────────────────────────────────
+user     = os.environ.get('PGUSER',     'postgres')
 password = os.environ.get('PGPASSWORD', 'lenses')
-host = os.environ.get('HOST', '127.0.0.1')
-dbname = 'kuappdb'
+host     = os.environ.get('HOST',       '127.0.0.1')
+dbname   = 'kuappdb'
 
 def db_connection():
     conn_str = f"dbname='{dbname}' user={user} host={host} password={password}"
     return psycopg2.connect(conn_str)
 
+# ── initialise / refresh the DB ────────────────────────────────────────────────
 def init_db():
     conn = db_connection()
-    cur = conn.cursor()
+    cur  = conn.cursor()
 
-    # Drop and recreate table (optional safety if structure changes)
-    cur.execute('''
-        DROP TABLE IF EXISTS courses;
-    ''')
+    # 1. Drop the table if it already exists
+    cur.execute('DROP TABLE IF EXISTS courses;')
     conn.commit()
 
-    # Create full table
+    # 2. Re-create it with ALL required columns
     cur.execute('''
         CREATE TABLE courses (
             id SERIAL PRIMARY KEY,
             code TEXT NOT NULL UNIQUE,
             name TEXT NOT NULL,
+
+            -- columns coming from ku_courses_reduced_2.csv
             title_kuh TEXT,
             faculty_kuh TEXT,
             institute TEXT,
@@ -62,16 +63,18 @@ def init_db():
             faculty_kuc TEXT,
             course_coordinators TEXT,
             last_modified TEXT,
-            code_kuc TEXT
+            code_kuc TEXT,
+
+            -- user-feedback fields (start out NULL)
+            user_rating INTEGER,
+            user_comment TEXT
         );
     ''')
     conn.commit()
 
-    # Load new data
-    df = pd.read_csv('data/ku_courses_reduced_2.csv')  # adjust path if needed
-
-    # Fill NaNs with None to insert as NULL
-    df = df.where(pd.notnull(df), None)
+    # 3. Load the CSV and insert its data  (feedback columns are left NULL)
+    df = pd.read_csv('data/ku_courses_reduced_2.csv')   # adjust path if needed
+    df = df.where(pd.notnull(df), None)                 # NaN → None
 
     for _, row in df.iterrows():
         cur.execute('''
@@ -94,7 +97,7 @@ def init_db():
                 %s, %s, %s, %s,
                 %s
             )
-            ON CONFLICT (code) DO NOTHING
+            ON CONFLICT (code) DO NOTHING;
         ''', tuple(row[col] for col in df.columns))
 
     conn.commit()

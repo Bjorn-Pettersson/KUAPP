@@ -4,20 +4,26 @@ from database import db_connection, init_db
 app = Flask(__name__)
 init_db()  # Only runs at startup
 
-@app.route('/course/<code>')
+@app.route('/course/<code>', methods=['GET', 'POST'])
 def course_detail(code):
     conn = db_connection()
     cur = conn.cursor()
 
-    # Fetch the course by code
-    cur.execute('''
-        SELECT * FROM courses WHERE code = %s
-    ''', (code,))
+    if request.method == 'POST':
+        rating = request.form.get('rating')
+        comment = request.form.get('comment')
+
+        cur.execute('''
+            UPDATE courses
+            SET user_rating = %s, user_comment = %s
+            WHERE code = %s
+        ''', (rating, comment, code))
+        conn.commit()
+
+    # Fetch updated course
+    cur.execute('SELECT * FROM courses WHERE code = %s', (code,))
     course = cur.fetchone()
-
-    # Get column names for rendering
     colnames = [desc[0] for desc in cur.description]
-
     conn.close()
 
     if course:

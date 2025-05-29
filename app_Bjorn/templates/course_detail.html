@@ -2,16 +2,41 @@
 <html>
 <head>
     <title>{{ course.name }}</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
 </head>
-<body>
-    <h1>{{ course.name }}</h1>
-    <p><strong>Code:</strong> {{ course.code }}</p>
-    <p><strong>Institute:</strong> {{ course.institute }}</p>
-    <p><strong>Department:</strong> {{ course.department }}</p>
-    <p><strong>Language:</strong> {{ course.language }}</p>
-    <p><strong>ECTS:</strong> {{ course.ects_kuc or course.ects_kuh }}</p>
-    <p><strong>Content:</strong></p>
-    <div style="white-space: pre-wrap;">{{ course.content }}</div>
-    <p><a href="{{ course.url_kuc }}" target="_blank">Go to official course page</a></p>
+<body class="p-4">
+    <div class="container">
+        <h1>{{ course.name }}</h1>
+        <p><strong>Code:</strong> {{ course.code }}</p>
+        <p><strong>Institute:</strong> {{ course.institute }}</p>
+        <p><strong>Department:</strong> {{ course.department }}</p>
+        <p><strong>Language:</strong> {{ course.language }}</p>
+        <p><strong>ECTS:</strong> {{ course.ects_kuc or course.ects_kuh }}</p>
+        <p><strong>Content:</strong></p>
+        <div style="white-space: pre-wrap;">{{ course.content }}</div>
+        <p><a href="{{ course.url_kuc }}" target="_blank">Go to official course page</a></p>
+
+        <hr>
+        <h2>Rate & Comment</h2>
+        <form method="POST">
+            <div class="mb-3">
+                <label for="rating" class="form-label">Rating (1–5)</label>
+                <input type="number" min="1" max="5" class="form-control" name="rating" id="rating" required>
+            </div>
+            <div class="mb-3">
+                <label for="comment" class="form-label">Comment</label>
+                <textarea class="form-control" name="comment" id="comment" rows="3" required></textarea>
+            </div>
+            <button type="submit" class="btn btn-success">Submit</button>
+        </form>
+
+        {% if course.user_comment %}
+            <hr>
+            <h3>Your Submitted Feedback</h3>
+            <p><strong>Rating:</strong> {{ course.user_rating }}/5</p>
+            <p><strong>Comment:</strong></p>
+            <div style="white-space: pre-wrap;">{{ course.user_comment }}</div>
+        {% endif %}
+    </div>
 </body>
 </html>
