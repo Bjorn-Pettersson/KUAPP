@@ -36,7 +36,7 @@ def init_db():
     """)
     cur.execute("""
         CREATE TABLE IF NOT EXISTS COURSE_COORDINATOR (
-            cc_id CHAR(29),
+            cc_id VARCHAR(40),
             name VARCHAR(40),
             PRIMARY KEY (cc_id)
         );
@@ -71,7 +71,7 @@ def init_db():
         CREATE TABLE IF NOT EXISTS COORDINATES (
             KURSUS_ID CHAR(10),
             term VARCHAR(6),
-            cc_id CHAR(28),
+            cc_id VARCHAR(40),
             PRIMARY KEY (KURSUS_ID, term, cc_id),
             FOREIGN KEY (KURSUS_ID, term) REFERENCES COURSE_AT_YEAR(KURSUS_ID, term)
                 ON UPDATE CASCADE,
