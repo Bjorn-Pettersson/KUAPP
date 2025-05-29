@@ -2,6 +2,10 @@
 <title>Ratings</title>
 
 <h1>All Ratings</h1>
+<form method="get" action="{{ url_for('ratings.ratings') }}" style="margin-bottom: 1em;">
+    <input type="text" name="q" placeholder="Search by course name or ID" value="{{ request.args.get('q', '') }}">
+    <button type="submit">Search</button>
+</form>
 
 <table>
     <tr>

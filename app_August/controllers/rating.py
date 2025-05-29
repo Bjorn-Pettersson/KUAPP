@@ -6,5 +6,6 @@ bp = Blueprint('ratings', __name__, url_prefix='/')
 
 @bp.route('/ratings', methods=['GET', 'POST'])
 def ratings():
-    categories = list_ratings()
+    search_term = request.args.get('q', '').strip()
+    categories = list_ratings(search_term if search_term else None)
     return render_template('ratings.html', categories=categories)

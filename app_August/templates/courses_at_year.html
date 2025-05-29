@@ -6,6 +6,7 @@
 <table>
     <tr>
         <th>Course ID</th>
+        <th>Course Name</th>
         <th>Term</th>
         <th>Blok</th>
         <th>Rate this course</th>
@@ -13,6 +14,7 @@
     {% for course in courses %}
         <tr>
             <td>{{ course.id }}</td>
+            <td>{{ course.name }}</td>
             <td>{{ course.term }}</td>
             <td>{{ course.blok }}</td>
             <td>
