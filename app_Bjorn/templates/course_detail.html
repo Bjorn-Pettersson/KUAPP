@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ course.name }}</title>
+</head>
+<body>
+    <h1>{{ course.name }}</h1>
+    <p><strong>Code:</strong> {{ course.code }}</p>
+    <p><strong>Institute:</strong> {{ course.institute }}</p>
+    <p><strong>Department:</strong> {{ course.department }}</p>
+    <p><strong>Language:</strong> {{ course.language }}</p>
+    <p><strong>ECTS:</strong> {{ course.ects_kuc or course.ects_kuh }}</p>
+    <p><strong>Content:</strong></p>
+    <div style="white-space: pre-wrap;">{{ course.content }}</div>
+    <p><a href="{{ course.url_kuc }}" target="_blank">Go to official course page</a></p>
+</body>
+</html>

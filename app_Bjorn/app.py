@@ -4,6 +4,29 @@ from database import db_connection, init_db
 app = Flask(__name__)
 init_db()  # Only runs at startup
 
+@app.route('/course/<code>')
+def course_detail(code):
+    conn = db_connection()
+    cur = conn.cursor()
+
+    # Fetch the course by code
+    cur.execute('''
+        SELECT * FROM courses WHERE code = %s
+    ''', (code,))
+    course = cur.fetchone()
+
+    # Get column names for rendering
+    colnames = [desc[0] for desc in cur.description]
+
+    conn.close()
+
+    if course:
+        course_dict = dict(zip(colnames, course))
+        return render_template('course_detail.html', course=course_dict)
+    else:
+        return "Course not found", 404
+
+
 @app.route('/', methods=['GET', 'POST'])
 def index():
     results = []
