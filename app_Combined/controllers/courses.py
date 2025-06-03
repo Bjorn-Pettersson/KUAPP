@@ -14,3 +14,10 @@ def courses():
         courses = list_courses()
 
     return render_template('courses.html', courses=courses)
+
+@bp.route('/courses/<course_id>')
+def course_detail(course_id):
+    course = get_course_by_id(course_id)  # You need to implement this function
+    if not course:
+        return render_template('404.html'), 404
+    return render_template('course_detail.html', course=course)

@@ -28,3 +28,17 @@ def list_courses(sort_by_rating=False, descending=True):
         ))
     conn.close()
     return Courses
+
+def get_course_by_id(course_id):
+    conn = db_connection()
+    cur = conn.cursor()
+    cur.execute('''
+        SELECT KURSUS_ID, coursename, description
+        FROM COURSES
+        WHERE KURSUS_ID = %s
+    ''', (course_id,))
+    row = cur.fetchone()
+    conn.close()
+    if row:
+        return Course(row[0], row[1], row[2], None)  # Add avg_rating if you want
+    return None
