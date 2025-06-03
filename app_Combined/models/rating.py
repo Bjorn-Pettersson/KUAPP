@@ -34,15 +34,16 @@ def insert_rating(ku_id, kursus_id, term, score, comment, time_stamp=None, user_
     # Ensure user exists (insert_user uses ON CONFLICT DO NOTHING)
     if user_name is None:
         user_name = "Unknown"  # fallback if no name provided
-    insert_user(ku_id, user_name)
+    k = insert_user(ku_id, user_name)
 
-    conn = db_connection()
-    cur = conn.cursor()
-    if time_stamp is None:
-        time_stamp = datetime.now()
-    cur.execute(
-        "INSERT INTO RATING (KU_ID, KURSUS_ID, term, score, comment, time_stamp) VALUES (%s, %s, %s, %s, %s, %s) ON CONFLICT DO NOTHING",
-        (ku_id, kursus_id, term, score, comment, time_stamp)
-    )
-    conn.commit()
-    conn.close()
+    if k==0:
+        conn = db_connection()
+        cur = conn.cursor()
+        if time_stamp is None:
+            time_stamp = datetime.now()
+        cur.execute(
+            "INSERT INTO RATING (KU_ID, KURSUS_ID, term, score, comment, time_stamp) VALUES (%s, %s, %s, %s, %s, %s) ON CONFLICT DO NOTHING",
+            (ku_id, kursus_id, term, score, comment, time_stamp)
+        )
+        conn.commit()
+        conn.close()
