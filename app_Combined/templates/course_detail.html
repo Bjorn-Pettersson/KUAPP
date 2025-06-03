@@ -4,9 +4,47 @@
 <h1>{{ course.name }}</h1>
 <p><strong>Course ID:</strong> {{ course.id }}</p>
 <p><strong>Block:</strong> {{ course.block }}</p>
+<p><strong>Term:</strong> {{ course.term }}</p>
 <p><strong>Institut:</strong> {{ course.institut }}</p>
 <p><strong>Sprog:</strong> {{ course.sprog }}</p>
 <p><strong>ECTS:</strong> {{ course.ects }}</p>
 <p><strong>Description:</strong> {{ course.description }}</p>
+
+<hr>
+<h2>Rate & Comment</h2>
+
+<form method="POST">
+    <input type="hidden" name="kursus_id" value="{{ course.id }}">
+    <input type="hidden" name="term" value="{{ course.term }}">
+    <div class="mb-3">
+        <label for="ku_id" class="form-label">KU ID (e.g. zts900)</label>
+        <input type="text" name="KU_ID" id="ku_id" class="form-control" required>
+    </div>
+    <div class="mb-3">
+        <label for="rating" class="form-label">Rating (1 to 10)</label>
+        <input type="number" min="1" max="10" class="form-control" name="score" id="rating" required>
+    </div>
+    <div class="mb-3">
+        <label for="comment" class="form-label">Comment</label>
+        <textarea class="form-control" name="comment" id="comment" rows="3" required></textarea>
+    </div>
+    <button type="submit" class="btn btn-success">Submit</button>
+</form>
+
+{% if error %}
+    <div class="alert alert-danger mt-3">{{ error }}</div>
+{% endif %}
+
+{% if ratings %}
+    <hr>
+    <h3>All Feedback</h3>
+    {% for KU_ID, score, comment, created_at in ratings %}
+        <div class="mb-3 p-3 border rounded">
+            <p><strong>{{ KU_ID }}</strong> rated <strong>{{ score }}/10</strong> on {{ created_at.strftime('%Y-%m-%d') }}</p>
+            <p style="white-space: pre-wrap;">{{ comment }}</p>
+        </div>
+    {% endfor %}
+{% endif %}
+
 <a href="{{ url_for('courses.courses') }}" class="btn btn-secondary">Back to Courses</a>
 {% endblock %}

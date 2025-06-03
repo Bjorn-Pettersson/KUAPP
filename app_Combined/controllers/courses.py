@@ -15,9 +15,19 @@ def courses():
 
     return render_template('courses.html', courses=courses)
 
-@bp.route('/courses/<course_id>')
+@bp.route('/courses/<course_id>', methods=['GET', 'POST'])
 def course_detail(course_id):
-    course = get_course_by_id(course_id)  # You need to implement this function
+    course, ratings = get_course_by_id(course_id)
+    if request.method == 'POST':
+        if 'comment' in request.form:
+            comment_text = request.form['comment']
+            kursus_id = request.form['kursus_id']
+            score = int(request.form['score'])
+            ku_id = request.form['KU_ID']  # Replace with actual user/session logic
+            print("Form keys:", list(request.form.keys()))
+            print("Form data:", dict(request.form))
+            term = request.form['term']
+            insert_rating(ku_id, kursus_id, term, score, comment_text)
     if not course:
         return render_template('404.html'), 404
-    return render_template('course_detail.html', course=course)
+    return render_template('course_detail.html', course=course, ratings=ratings)

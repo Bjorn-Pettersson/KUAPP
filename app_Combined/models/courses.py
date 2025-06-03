@@ -1,4 +1,5 @@
 from database import db_connection
+from models.rating import Rating
 
 class Course:
     def __init__(self, id, name, description, avg_rating):
@@ -8,7 +9,7 @@ class Course:
         self.avg_rating = avg_rating
 
 class CourseFull:
-    def __init__(self, id, name, description, blok, institut, ects, sprog, avg_rating):
+    def __init__(self, id, name, description, blok, institut, ects, sprog, term, avg_rating):
         self.id = id
         self.name = name
         self.description = description
@@ -16,6 +17,7 @@ class CourseFull:
         self.institut = institut  # assign to .institut
         self.ects = ects          # assign to .ects
         self.sprog = sprog        # assign to .sprog
+        self.term = term        # assign to .sprog
         self.avg_rating = avg_rating
 
 def list_courses(sort_by_rating=False, descending=True):
@@ -45,14 +47,22 @@ def get_course_by_id(course_id):
     cur = conn.cursor()
     cur.execute('''
         SELECT c.KURSUS_ID, c.coursename, c.description,
-            ca.blok, ca.institute, ca.ects_kuh, ca.language
+            ca.blok, ca.institute, ca.ects_kuh, ca.language, ca.term
         FROM (SELECT * FROM COURSES WHERE KURSUS_ID = %s) c
         JOIN COURSE_AT_YEAR ca
         ON c.KURSUS_ID = ca.KURSUS_ID AND ca.year = c.latest_year
         LIMIT 1
     ''', (course_id,))
     row = cur.fetchone()
+    # Fetch ratings for this specific course instance
+    cur.execute("""
+        SELECT r.KU_ID, r.score, r.comment, r.time_stamp
+        FROM rating r
+        WHERE r.KURSUS_ID = %s
+        ORDER BY r.time_stamp DESC
+    """, (course_id,))
+    ratings = cur.fetchall()
     conn.close()
     if row:
-        return CourseFull(row[0], row[1], row[2], row[3], row[4], row[5], row[6], None)  # Add avg_rating if you want
-    return None
+        return CourseFull(row[0], row[1], row[2], row[3], row[4], row[5], row[6], row[7], None), ratings
+    return None, None
