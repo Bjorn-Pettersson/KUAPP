@@ -1,4 +1,6 @@
-<!doctype html>
+{% extends "base.html" %}
+{% block title %}Courses{% endblock %}
+{% block content %}
 <title>courses:</title>
 
 <a href="{{ url_for('ratings.ratings') }}" class="register-link">Courses</a>
@@ -32,3 +34,4 @@
         </tr>
     {% endfor %}
 </table>
+{% endblock %}
