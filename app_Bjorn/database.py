@@ -4,7 +4,7 @@ import pandas as pd
 
 # ── connection parameters ──────────────────────────────────────────────────────
 user     = os.environ.get('PGUSER',     'postgres')
-password = os.environ.get('PGPASSWORD', 'lenses')
+password = os.environ.get('PGPASSWORD', 'minkonto1')
 host     = os.environ.get('HOST',       '127.0.0.1')
 dbname   = 'kuappdb'
 

@@ -1,0 +1,16 @@
+# We build on top of the an existing python image
+FROM python:3.10.17-alpine
+# This image comes with a /code folder where we should have our code
+WORKDIR /code
+
+# We install probaby more system libraries that actually need
+RUN apk add --no-cache gcc musl-dev linux-headers postgresql postgresql-contrib libpq-dev bash
+
+COPY requirements.txt requirements.txt
+RUN pip install --upgrade pip
+RUN pip install -r requirements.txt
+
+COPY . .
+
+# The entry point is called only when the container starts
+ ENTRYPOINT ["./entrypoint.sh"]
