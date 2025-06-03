@@ -1,7 +1,7 @@
 <!doctype html>
 <title>courses:</title>
 
-<a href="{{ url_for('category.categories') }}" class="register-link">Courses</a>
+<a href="{{ url_for('ratings.ratings') }}" class="register-link">Courses</a>
 
 <a href="{{ url_for('coordinators.coordinators', sort='rating', desc='0') }}">Sort by Rating (Asc)</a> |
 <a href="{{ url_for('coordinators.coordinators', sort='rating', desc='1') }}">Sort by Rating (Desc)</a>
@@ -14,7 +14,6 @@
     </tr>
     {% for coordinator in coordinators %}
         <tr>
-            <td>{{ coordinator.id }}</td>
             <td>{{ coordinator.name }}</td>
             <td>
                 {% if coordinator.avg_rating is not none %}

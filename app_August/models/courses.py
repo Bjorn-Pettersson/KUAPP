@@ -1,5 +1,4 @@
 from database import db_connection
-from models.category import Category
 
 class Course:
     def __init__(self, id, name, description, avg_rating):

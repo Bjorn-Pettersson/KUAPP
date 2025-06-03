@@ -36,9 +36,8 @@ def init_db():
     """)
     cur.execute("""
         CREATE TABLE IF NOT EXISTS COURSE_COORDINATOR (
-            cc_id VARCHAR(40),
             name VARCHAR(40),
-            PRIMARY KEY (cc_id)
+            PRIMARY KEY (name)
         );
     """)
     cur.execute("""
@@ -71,11 +70,11 @@ def init_db():
         CREATE TABLE IF NOT EXISTS COORDINATES (
             KURSUS_ID CHAR(10),
             term VARCHAR(6),
-            cc_id VARCHAR(40),
-            PRIMARY KEY (KURSUS_ID, term, cc_id),
+            name VARCHAR(40),
+            PRIMARY KEY (KURSUS_ID, term, name),
             FOREIGN KEY (KURSUS_ID, term) REFERENCES COURSE_AT_YEAR(KURSUS_ID, term)
                 ON UPDATE CASCADE,
-            FOREIGN KEY (cc_id) REFERENCES COURSE_COORDINATOR(cc_id)
+            FOREIGN KEY (name) REFERENCES COURSE_COORDINATOR(name)
         );
     """)
     
@@ -96,11 +95,11 @@ def init_db():
     for _, row in df.iterrows():
         cur.execute(
             '''
-            INSERT INTO COURSE_COORDINATOR (cc_id, name)
-            VALUES (%s, %s)
+            INSERT INTO COURSE_COORDINATOR (name)
+            VALUES (%s)
             ON CONFLICT DO NOTHING
             ''',
-            (row['course_coordinator_id'], row['course_coordinator_name'])
+            (row['course_coordinator_name'],)
         )
     for _, row in df.iterrows():
         cur.execute(
@@ -114,20 +113,12 @@ def init_db():
     for _, row in df.iterrows():
         cur.execute(
             '''
-            INSERT INTO COORDINATES (KURSUS_ID, term, cc_id)
+            INSERT INTO COORDINATES (KURSUS_ID, term, name)
             VALUES (%s, %s, %s)
             ON CONFLICT DO NOTHING
             ''',
-            (row['code_kuc'],row['term'], row['course_coordinator_id'])
+            (row['code_kuc'],row['term'], row['course_coordinator_name'])
         )
-
-    categories = ['DIS', 'House chores']
-    for category in categories:
-        cur.execute('INSERT INTO categories (category_name) VALUES (%s) ON CONFLICT DO NOTHING', (category,))
-
-    todos = [('Assignment 1', 'DIS'), ('Groceries', 'House chores'), ('Assignment 2', 'DIS'), ('Project', 'DIS')]
-    for (todo, category) in todos:
-        cur.execute('INSERT INTO todos (todo_text, category_id) VALUES (%s, (SELECT id FROM categories WHERE category_name = %s)) ON CONFLICT DO NOTHING', (todo, category))
 
     conn.commit()
     conn.close()
