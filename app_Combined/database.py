@@ -43,6 +43,7 @@ def init_db():
             KURSUS_ID CHAR(10),
             coursename VARCHAR(70),
             description TEXT,
+            latest_year INTEGER,
             PRIMARY KEY (KURSUS_ID)
         );
     """)
@@ -90,6 +91,7 @@ def init_db():
             course_coordinators TEXT,
             last_modified TEXT,
             KURSUS_ID CHAR(10) NOT NULL,
+            year INTEGER,
             PRIMARY KEY (KURSUS_ID, term),
             FOREIGN KEY (KURSUS_ID) REFERENCES COURSES(KURSUS_ID)
                 ON UPDATE CASCADE
@@ -131,8 +133,8 @@ def init_db():
     for _, row in df2.iterrows():
         cur.execute(
             '''
-            INSERT INTO COURSES (KURSUS_ID, coursename, description)
-            VALUES (%s, %s, %s)
+            INSERT INTO COURSES (KURSUS_ID, coursename, description, latest_year)
+            VALUES (%s, %s, %s, NULL)
             ON CONFLICT DO NOTHING
             ''',
             (row['code_kuc'], row['title_kuh'], row['content'])
@@ -155,7 +157,7 @@ def init_db():
         'teaching_methods', 'workload', 'feedback_form', 'signup', 'exam_html', 'language',
         'course_code', 'ects_kuc', 'level', 'duration', 'placement', 'blok', 'capacity',
         'study_board', 'department', 'faculty_kuc', 'course_coordinators', 'last_modified',
-        'KURSUS_ID'
+        'KURSUS_ID', 'year'   # <-- Add 'year' here
     ]
     for _, row in df.iterrows():
         values = (
@@ -194,7 +196,8 @@ def init_db():
             row['faculty_kuc'],
             row['course_coordinators'],
             row['last_modified'],
-            row['code_kuc']
+            row['code_kuc'],
+            2000+int(row['term'][1:3])  #
         )
         cur.execute(
             f"""
@@ -216,5 +219,18 @@ def init_db():
             (row['code_kuc'],row['term'], row['course_coordinator_name'])
         )
 
+    conn.commit()
+    cur.execute(
+        '''
+        UPDATE COURSES
+        SET latest_year = sub.max_year
+        FROM (
+            SELECT KURSUS_ID, MAX(year) AS max_year
+            FROM COURSE_AT_YEAR
+            GROUP BY KURSUS_ID
+        ) AS sub
+        WHERE COURSES.KURSUS_ID = sub.KURSUS_ID;
+        '''
+    )
     conn.commit()
     conn.close()

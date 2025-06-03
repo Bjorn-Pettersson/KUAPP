@@ -3,6 +3,10 @@
 {% block content %}
 <h1>{{ course.name }}</h1>
 <p><strong>Course ID:</strong> {{ course.id }}</p>
+<p><strong>Block:</strong> {{ course.block }}</p>
+<p><strong>Institut:</strong> {{ course.institut }}</p>
+<p><strong>Sprog:</strong> {{ course.sprog }}</p>
+<p><strong>ECTS:</strong> {{ course.ects }}</p>
 <p><strong>Description:</strong> {{ course.description }}</p>
 <a href="{{ url_for('courses.courses') }}" class="btn btn-secondary">Back to Courses</a>
 {% endblock %}
