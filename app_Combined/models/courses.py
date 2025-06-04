@@ -59,7 +59,7 @@ def get_course_by_id(course_id, term=None):
     if term==None:
         cur.execute('''
             SELECT c.KURSUS_ID, c.coursename, c.content,
-                ca.blok, ca.faculty, ca.ects, ca.language, ca.term, ca.course_coordinator_name
+                ca.blok, ca.department, ca.ects, ca.language, ca.term, ca.course_coordinator_name
             FROM (SELECT * FROM COURSES WHERE KURSUS_ID = %s) c
             JOIN COURSE_AT_YEAR ca
             ON c.KURSUS_ID = ca.KURSUS_ID AND ca.year = c.latest_year
@@ -78,7 +78,7 @@ def get_course_by_id(course_id, term=None):
     else:
         cur.execute('''
             SELECT c.KURSUS_ID, c.coursename, ca.content,
-                ca.blok, ca.faculty, ca.ects, ca.language, ca.term, ca.course_coordinator_name
+                ca.blok, ca.department, ca.ects, ca.language, ca.term, ca.course_coordinator_name
             FROM (SELECT * FROM COURSES WHERE KURSUS_ID = %s) c
             JOIN COURSE_AT_YEAR ca
             ON c.KURSUS_ID = ca.KURSUS_ID AND ca.term = %s
