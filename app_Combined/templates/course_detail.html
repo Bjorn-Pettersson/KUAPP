@@ -4,7 +4,19 @@
 <h1>{{ course.name }}</h1>
 <p><strong>Course ID:</strong> {{ course.id }}</p>
 <p><strong>Block:</strong> {{ course.block }}</p>
-<p><strong>Term:</strong> {{ course.term }}</p>
+<p><strong>Term:</strong>
+    <form method="get" style="display:inline;">
+        <select name="term" onchange="this.form.submit()" class="form-select d-inline w-auto" style="display:inline-block;">
+            <option value="all" {% if selected_term == "all" %}selected{% endif %}>
+                ({{ latest_term }}) (All Ratings)
+            </option>
+            {% for t in terms %}
+                <option value="{{ t }}" {% if t == selected_term %}selected{% endif %}>{{ t }}</option>
+            {% endfor %}
+        </select>
+        <input type="hidden" name="course_id" value="{{ course.id }}">
+    </form>
+</p>
 <p><strong>Institut:</strong> {{ course.institut }}</p>
 <p><strong>Sprog:</strong> {{ course.sprog }}</p>
 <p><strong>ECTS:</strong> {{ course.ects }}</p>
