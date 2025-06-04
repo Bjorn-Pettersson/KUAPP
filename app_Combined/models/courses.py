@@ -74,6 +74,12 @@ def get_course_by_id(course_id, term=None):
             ORDER BY r.time_stamp DESC
         """, (course_id,))
         ratings = cur.fetchall()
+        cur.execute("""
+            SELECT AVG(score) as avg_rating
+            FROM rating
+            WHERE KURSUS_ID = %s
+        """, (course_id,))
+        avg_rating_row = cur.fetchone()
         conn.close()
     else:
         cur.execute('''
@@ -93,9 +99,15 @@ def get_course_by_id(course_id, term=None):
             ORDER BY r.time_stamp DESC
         """, (course_id,term))
         ratings = cur.fetchall()
+        cur.execute("""
+            SELECT AVG(score) as avg_rating
+            FROM rating
+            WHERE KURSUS_ID = %s AND term = %s
+        """, (course_id, term))
+        avg_rating_row
         conn.close()
     if row:
-        return CourseFull(row[0], row[1], row[2], row[3], row[4], row[5], row[6], row[7], row[8], None), ratings
+        return CourseFull(row[0], row[1], row[2], row[3], row[4], row[5], row[6], row[7], row[8], avg_rating_row), ratings
     return None, None
 
 def fetch_all_terms(course_id):
