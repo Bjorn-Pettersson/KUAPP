@@ -1,20 +1,30 @@
 {% extends "base.html" %}
 {% block title %}Courses{% endblock %}
 {% block content %}
-<title>courses:</title>
+<h1 class="mb-4">All Courses</h1>
 
-<a href="{{ url_for('ratings.ratings') }}" class="register-link">Courses</a>
-
-<a href="{{ url_for('courses.courses', sort='rating', desc='0') }}">Sort by Rating (Asc)</a> |
-<a href="{{ url_for('courses.courses', sort='rating', desc='1') }}">Sort by Rating (Desc)</a>
-
-<table>
-    <tr>
-        <th>Course ID</th>
-        <th>Course Name</th>
-        <th>Description</th>
-        <th>Average Rating</th>
-    </tr>
+<table class="table table-striped table-bordered align-middle">
+    <thead class="table-dark">
+        <tr>
+            <th>Course ID</th>
+            <th>Course Name</th>
+            <th>Description</th>
+            <th>
+                <span style="display: flex; align-items: center; gap: 0.25em;">
+                    Average Rating
+                    <span style="display: flex; flex-direction: column; align-items: center; margin-left: 0.25em;">
+                        <a href="{{ url_for('courses.courses', sort='rating', desc='0') }}" title="Sort ascending" style="line-height: 1;">
+                            <span style="font-size:0.9em; color: #888;">&#9650;</span>
+                        </a>
+                        <a href="{{ url_for('courses.courses', sort='rating', desc='1') }}" title="Sort descending" style="line-height: 1;">
+                            <span style="font-size:0.9em; color: #888;">&#9660;</span>
+                        </a>
+                    </span>
+                </span>
+            </th>
+        </tr>
+    </thead>
+    <tbody>
     {% for course in courses %}
         <tr>
             <td>
@@ -23,15 +33,16 @@
                 </a>
             </td>
             <td>{{ course.name }}</td>
-            <td>{{ course.description }}</td>
+            <td style="max-width: 600px; white-space: pre-line;">{{ course.description }}</td>
             <td>
                 {% if course.avg_rating is not none %}
-                    {{ course.avg_rating|round(2) }}
+                    <span class="badge bg-success">{{ course.avg_rating|round(2) }}</span>
                 {% else %}
-                    No ratings
+                    <span class="text-muted">No ratings</span>
                 {% endif %}
             </td>
         </tr>
     {% endfor %}
+    </tbody>
 </table>
 {% endblock %}

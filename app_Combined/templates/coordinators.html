@@ -1,26 +1,40 @@
 {% extends "base.html" %}
 {% block title %}Coordinators{% endblock %}
 {% block content %}
-<h1>Coordinators</h1>
-<a href="{{ url_for('coordinators.coordinators', sort='rating', desc='0') }}">Sort by Rating (Asc)</a> |
-<a href="{{ url_for('coordinators.coordinators', sort='rating', desc='1') }}">Sort by Rating (Desc)</a>
+<h1 class="mb-4">Course Coordinators</h1>
 
-<table>
-    <tr>
-        <th>Name</th>
-        <th>Average Course Rating</th>
-    </tr>
+<table class="table table-striped table-bordered align-middle">
+    <thead class="table-dark">
+        <tr>
+            <th>Name</th>
+            <th>
+                <span style="display: flex; align-items: center; gap: 0.25em;">
+                    Average Course Rating
+                    <span style="display: flex; flex-direction: column; align-items: center; margin-left: 0.25em;">
+                        <a href="{{ url_for('coordinators.coordinators', sort='rating', desc='0') }}" title="Sort ascending" style="line-height: 1;">
+                            <span style="font-size:0.9em; color: #888;">&#9650;</span>
+                        </a>
+                        <a href="{{ url_for('coordinators.coordinators', sort='rating', desc='1') }}" title="Sort descending" style="line-height: 1;">
+                            <span style="font-size:0.9em; color: #888;">&#9660;</span>
+                        </a>
+                    </span>
+                </span>
+            </th>
+        </tr>
+    </thead>
+    <tbody>
     {% for coordinator in coordinators %}
         <tr>
             <td>{{ coordinator.name }}</td>
             <td>
                 {% if coordinator.avg_rating is not none %}
-                    {{ coordinator.avg_rating|round(2) }}
+                    <span class="badge bg-success">{{ coordinator.avg_rating|round(2) }}</span>
                 {% else %}
-                    No ratings
+                    <span class="text-muted">No ratings</span>
                 {% endif %}
             </td>
         </tr>
     {% endfor %}
+    </tbody>
 </table>
 {% endblock %}
