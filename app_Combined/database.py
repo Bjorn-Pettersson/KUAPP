@@ -41,31 +41,22 @@ def init_db():
     cur.execute("""
         CREATE TABLE IF NOT EXISTS COURSES (
             KURSUS_ID CHAR(10),
-            coursename VARCHAR(70),
-            description TEXT,
+            coursename VARCHAR(100),
+            content TEXT,
             latest_year INTEGER,
             PRIMARY KEY (KURSUS_ID)
         );
     """)
     cur.execute("""
         CREATE TABLE IF NOT EXISTS COURSE_COORDINATOR (
-            name VARCHAR(40),
+            name VARCHAR(100),
             PRIMARY KEY (name)
         );
     """)
     cur.execute("""
-    CREATE TABLE IF NOT EXISTS COURSE_AT_YEAR (
-            term TEXT,
-            coursename VARCHAR(70) NOT NULL,
-            description TEXT,
-            faculty_kuh TEXT,
-            institute TEXT,
-            ects_kuh TEXT,
-            url_kuh TEXT,
-            exam TEXT,
-            re_exam TEXT,
-            code_kuh TEXT,
-            url_kuc TEXT,
+        CREATE TABLE IF NOT EXISTS COURSE_AT_YEAR (
+            url TEXT,
+            coursename VARCHAR(100) NOT NULL,
             volume TEXT,
             education TEXT,
             content TEXT,
@@ -78,19 +69,20 @@ def init_db():
             signup TEXT,
             exam_html TEXT,
             language TEXT,
-            course_code TEXT,
-            ects_kuc TEXT,
+            KURSUS_ID CHAR(10) NOT NULL,
+            ects TEXT,
             level TEXT,
             duration TEXT,
             placement TEXT,
-            blok CHAR(1),
+            blok VARCHAR(30),
             capacity TEXT,
             study_board TEXT,
             department TEXT,
-            faculty_kuc TEXT,
-            course_coordinator_name VARCHAR(40),
+            faculty TEXT,
+            course_coordinators TEXT,
             last_modified TEXT,
-            KURSUS_ID CHAR(10) NOT NULL,
+            term TEXT,
+            course_coordinator_name VARCHAR(100),
             year INTEGER,
             PRIMARY KEY (KURSUS_ID, term),
             FOREIGN KEY (KURSUS_ID) REFERENCES COURSES(KURSUS_ID)
@@ -101,7 +93,7 @@ def init_db():
         CREATE TABLE IF NOT EXISTS RATING (
             KU_ID CHAR(6),
             KURSUS_ID CHAR(10),
-            term VARCHAR(6),
+            term TEXT,
             time_stamp DATE,
             score INTEGER,
             comment VARCHAR(250),
@@ -116,8 +108,8 @@ def init_db():
     cur.execute("""
         CREATE TABLE IF NOT EXISTS COORDINATES (
             KURSUS_ID CHAR(10),
-            term VARCHAR(6),
-            name VARCHAR(40),
+            term TEXT,
+            name VARCHAR(100),
             PRIMARY KEY (KURSUS_ID, term, name),
             FOREIGN KEY (KURSUS_ID, term) REFERENCES COURSE_AT_YEAR(KURSUS_ID, term)
                 ON UPDATE CASCADE,
@@ -133,11 +125,11 @@ def init_db():
     for _, row in df2.iterrows():
         cur.execute(
             '''
-            INSERT INTO COURSES (KURSUS_ID, coursename, description, latest_year)
+            INSERT INTO COURSES (KURSUS_ID, coursename, content, latest_year)
             VALUES (%s, %s, %s, NULL)
             ON CONFLICT DO NOTHING
             ''',
-            (row['code_kuc'], row['title_kuh'], row['content'])
+            (row['course_code'], row['title'], row['content'])
         )
     for _, row in df.iterrows():
         cur.execute(
@@ -148,30 +140,18 @@ def init_db():
             ''',
             (row['course_coordinator_name'],)
         )
-        # schedule is blok, title_kuc is coursename, code_kuc is KURSUS_ID
-        # content is description
     columns = [
-        'term', 'coursename', 'description', 'faculty_kuh', 'institute',
-        'ects_kuh', 'url_kuh', 'exam', 're_exam', 'code_kuh', 'url_kuc', 'volume',
-        'education', 'content', 'learning_outcome', 'literature', 'recommended_prereq',
-        'teaching_methods', 'workload', 'feedback_form', 'signup', 'exam_html', 'language',
-        'course_code', 'ects_kuc', 'level', 'duration', 'placement', 'blok', 'capacity',
-        'study_board', 'department', 'faculty_kuc', 'course_coordinator_name', 'last_modified',
-        'KURSUS_ID', 'year'   # <-- Add 'year' here
+        'url', 'coursename', 'volume', 'education', 'content', 'learning_outcome', 'literature',
+        'recommended_prereq', 'teaching_methods', 'workload', 'feedback_form', 'signup',
+        'exam_html', 'language', 'KURSUS_ID', 'ects', 'level', 'duration', 'placement',
+        'blok', 'capacity', 'study_board', 'department', 'faculty', 'course_coordinators',
+        'last_modified', 'term', 'course_coordinator_name', 'year'
     ]
+
     for _, row in df.iterrows():
         values = (
-            row['term'],
-            row['title_kuh'],
-            row['content'],
-            row['faculty_kuh'],
-            row['institute'],
-            row['ects_kuh'],
-            row['url_kuh'],
-            row['exam'],
-            row['re_exam'],
-            row['code_kuh'],
-            row['url_kuc'],
+            row['url'],
+            row['title'],
             row['volume'],
             row['education'],
             row['content'],
@@ -184,20 +164,21 @@ def init_db():
             row['signup'],
             row['exam_html'],
             row['language'],
-            row['course_code'],
-            row['ects_kuc'],
+            row['course_code'],      # KURSUS_ID in table
+            row['ects'],
             row['level'],
             row['duration'],
             row['placement'],
-            row['schedule'],
+            row['schedule'],         # blok in table
             row['capacity'],
             row['study_board'],
             row['department'],
-            row['faculty_kuc'],
-            row['course_coordinator_name'],
+            row['faculty'],
+            row['course_coordinators'],
             row['last_modified'],
-            row['code_kuc'],
-            2000+int(row['term'][1:3])  #
+            row['term'],
+            row['course_coordinator_name'],
+            2000 + int(row['term'][9:11])  # or your year logic
         )
         cur.execute(
             f"""
@@ -216,7 +197,7 @@ def init_db():
             VALUES (%s, %s, %s)
             ON CONFLICT DO NOTHING
             ''',
-            (row['code_kuc'],row['term'], row['course_coordinator_name'])
+            (row['course_code'],row['term'], row['course_coordinator_name'])
         )
 
     conn.commit()

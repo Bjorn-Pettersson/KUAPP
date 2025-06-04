@@ -29,19 +29,19 @@ def list_courses(sort_by_rating=False, descending=True, search_term=None):
         order_clause = f"ORDER BY avg_rating {'DESC NULLS LAST' if descending else 'ASC NULLS LAST'}"
     if search_term:
         cur.execute(f'''
-            SELECT c.KURSUS_ID, c.coursename, c.description, AVG(r.score) as avg_rating
+            SELECT c.KURSUS_ID, c.coursename, c.content, AVG(r.score) as avg_rating
             FROM COURSES c
             LEFT JOIN RATING r ON c.KURSUS_ID = r.KURSUS_ID
             WHERE c.coursename ILIKE %s OR c.KURSUS_ID ILIKE %s        
-            GROUP BY c.KURSUS_ID, c.coursename, c.description
+            GROUP BY c.KURSUS_ID, c.coursename, c.content
             {order_clause}
         ''', (f'%{search_term}%',f'%{search_term}%'))
     else:
         cur.execute(f'''
-            SELECT c.KURSUS_ID, c.coursename, c.description, AVG(r.score) as avg_rating
+            SELECT c.KURSUS_ID, c.coursename, c.content, AVG(r.score) as avg_rating
             FROM COURSES c
             LEFT JOIN RATING r ON c.KURSUS_ID = r.KURSUS_ID
-            GROUP BY c.KURSUS_ID, c.coursename, c.description
+            GROUP BY c.KURSUS_ID, c.coursename, c.content
             {order_clause}
         ''')
     db_Courses = cur.fetchall()
@@ -58,8 +58,8 @@ def get_course_by_id(course_id, term=None):
     cur = conn.cursor()
     if term==None:
         cur.execute('''
-            SELECT c.KURSUS_ID, c.coursename, c.description,
-                ca.blok, ca.institute, ca.ects_kuh, ca.language, ca.term, ca.course_coordinator_name
+            SELECT c.KURSUS_ID, c.coursename, c.content,
+                ca.blok, ca.faculty, ca.ects, ca.language, ca.term, ca.course_coordinator_name
             FROM (SELECT * FROM COURSES WHERE KURSUS_ID = %s) c
             JOIN COURSE_AT_YEAR ca
             ON c.KURSUS_ID = ca.KURSUS_ID AND ca.year = c.latest_year
@@ -77,8 +77,8 @@ def get_course_by_id(course_id, term=None):
         conn.close()
     else:
         cur.execute('''
-            SELECT c.KURSUS_ID, c.coursename, ca.description,
-                ca.blok, ca.institute, ca.ects_kuh, ca.language, ca.term, ca.course_coordinator_name
+            SELECT c.KURSUS_ID, c.coursename, ca.content,
+                ca.blok, ca.faculty, ca.ects, ca.language, ca.term, ca.course_coordinator_name
             FROM (SELECT * FROM COURSES WHERE KURSUS_ID = %s) c
             JOIN COURSE_AT_YEAR ca
             ON c.KURSUS_ID = ca.KURSUS_ID AND ca.term = %s
