@@ -14,7 +14,7 @@ def list_coordinators(sort_by_rating=False, descending=True):
     cur.execute(f'''
         SELECT co.name, AVG(r.score) as avg_rating
         FROM COORDINATES co
-        LEFT JOIN RATING r ON co.KURSUS_ID = r.KURSUS_ID
+        LEFT JOIN RATING r ON co.KURSUS_ID = r.KURSUS_ID and r.term = co.term
         GROUP BY co.name
         {order_clause}
     ''')
