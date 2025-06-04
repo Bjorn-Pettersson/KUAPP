@@ -18,7 +18,11 @@ def courses():
 
 @bp.route('/courses/<course_id>', methods=['GET', 'POST'])
 def course_detail(course_id):
-    course, ratings = get_course_by_id(course_id)
+    term = request.args.get('term')
+    if term=="all":
+        term = None
+    course, ratings = get_course_by_id(course_id, term)
+    terms, latest_term = fetch_all_terms(course_id)
     error = None
     
     if request.method == 'POST':
@@ -33,5 +37,7 @@ def course_detail(course_id):
             
     if not course:
         return render_template('404.html'), 404
-    
-    return render_template('course_detail.html', course=course, ratings=ratings, error=error)
+    if not term or term=="all":
+        return render_template('course_detail.html', course=course, ratings=ratings, error=error, terms=terms, latest_term=latest_term)
+    return render_template('course_detail.html', course=course, ratings=ratings, error=error, terms=terms, selected_term=term,latest_term=latest_term) 
+        
