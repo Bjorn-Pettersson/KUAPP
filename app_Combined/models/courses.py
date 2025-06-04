@@ -9,7 +9,7 @@ class Course:
         self.avg_rating = avg_rating
 
 class CourseFull:
-    def __init__(self, id, name, description, blok, institut, ects, sprog, term, avg_rating):
+    def __init__(self, id, name, description, blok, institut, ects, sprog, term, coordinator, avg_rating):
         self.id = id
         self.name = name
         self.description = description
@@ -18,6 +18,7 @@ class CourseFull:
         self.ects = ects          # assign to .ects
         self.sprog = sprog        # assign to .sprog
         self.term = term        # assign to .sprog
+        self.coordinator = coordinator
         self.avg_rating = avg_rating
 
 def list_courses(sort_by_rating=False, descending=True, search_term=None):
@@ -58,7 +59,7 @@ def get_course_by_id(course_id, term=None):
     if term==None:
         cur.execute('''
             SELECT c.KURSUS_ID, c.coursename, c.description,
-                ca.blok, ca.institute, ca.ects_kuh, ca.language, ca.term
+                ca.blok, ca.institute, ca.ects_kuh, ca.language, ca.term, ca.course_coordinator_name
             FROM (SELECT * FROM COURSES WHERE KURSUS_ID = %s) c
             JOIN COURSE_AT_YEAR ca
             ON c.KURSUS_ID = ca.KURSUS_ID AND ca.year = c.latest_year
@@ -77,7 +78,7 @@ def get_course_by_id(course_id, term=None):
     else:
         cur.execute('''
             SELECT c.KURSUS_ID, c.coursename, ca.description,
-                ca.blok, ca.institute, ca.ects_kuh, ca.language, ca.term
+                ca.blok, ca.institute, ca.ects_kuh, ca.language, ca.term, ca.course_coordinator_name
             FROM (SELECT * FROM COURSES WHERE KURSUS_ID = %s) c
             JOIN COURSE_AT_YEAR ca
             ON c.KURSUS_ID = ca.KURSUS_ID AND ca.term = %s
@@ -94,7 +95,7 @@ def get_course_by_id(course_id, term=None):
         ratings = cur.fetchall()
         conn.close()
     if row:
-        return CourseFull(row[0], row[1], row[2], row[3], row[4], row[5], row[6], row[7], None), ratings
+        return CourseFull(row[0], row[1], row[2], row[3], row[4], row[5], row[6], row[7], row[8], None), ratings
     return None, None
 
 def fetch_all_terms(course_id):

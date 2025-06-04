@@ -88,7 +88,7 @@ def init_db():
             study_board TEXT,
             department TEXT,
             faculty_kuc TEXT,
-            course_coordinators TEXT,
+            course_coordinator_name VARCHAR(40),
             last_modified TEXT,
             KURSUS_ID CHAR(10) NOT NULL,
             year INTEGER,
@@ -156,7 +156,7 @@ def init_db():
         'education', 'content', 'learning_outcome', 'literature', 'recommended_prereq',
         'teaching_methods', 'workload', 'feedback_form', 'signup', 'exam_html', 'language',
         'course_code', 'ects_kuc', 'level', 'duration', 'placement', 'blok', 'capacity',
-        'study_board', 'department', 'faculty_kuc', 'course_coordinators', 'last_modified',
+        'study_board', 'department', 'faculty_kuc', 'course_coordinator_name', 'last_modified',
         'KURSUS_ID', 'year'   # <-- Add 'year' here
     ]
     for _, row in df.iterrows():
@@ -194,7 +194,7 @@ def init_db():
             row['study_board'],
             row['department'],
             row['faculty_kuc'],
-            row['course_coordinators'],
+            row['course_coordinator_name'],
             row['last_modified'],
             row['code_kuc'],
             2000+int(row['term'][1:3])  #
