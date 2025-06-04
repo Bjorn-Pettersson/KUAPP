@@ -8,10 +8,11 @@ bp = Blueprint('courses', __name__, url_prefix='/')
 def courses():
     sort = request.args.get('sort')
     desc = request.args.get('desc', '1') == '1'
+    search_term = request.args.get('q', '').strip()
     if sort == 'rating':
-        courses = list_courses(sort_by_rating=True, descending=desc)
+        courses = list_courses(sort_by_rating=True, descending=desc, search_term=(search_term if search_term else None))
     else:
-        courses = list_courses()
+        courses = list_courses(search_term=(search_term if search_term else None))
 
     return render_template('courses.html', courses=courses)
 
