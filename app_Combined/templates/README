@@ -1,0 +1,99 @@
+README : KU COURSES WEB APP
+
+This document explains how to compile the KU Courses web application from source and how to interact with it.
+
+## 1. Compiling from Source
+
+### Prerequisites
+- Docker and Docker Compose
+- Git (optional, for cloning the repository)
+
+### Setup Instructions
+
+1. **Clone or download the repository**
+   ```bash
+   git clone <repository-url>
+   cd app_Combined
+   ```
+
+2. **Build and start the application using Docker Compose**
+   ```bash
+   docker-compose up --build
+   ```
+
+   This command:
+   - Builds the Docker container defined in the Dockerfile
+   - Creates a PostgreSQL database container
+   - Initializes the database using the `init_db()` function in database.py
+   - Starts the Flask application in debug mode
+
+3. **Database Initialization**
+   The database is automatically initialized when the application starts via the `init_db()` function called in app.py. This creates the necessary tables:
+   - USERS
+   - COURSES
+   - COURSE_COORDINATOR
+   - COURSE_AT_YEAR
+   - RATING
+   - COORDINATES
+   - And other utility tables
+
+## 2. Running and Interacting with the Web Application
+
+### Accessing the Application
+Once the containers are running, you can access the application at:
+```
+http://localhost:5000
+```
+
+### Main Features
+
+#### Navigation
+The application has a navigation bar with the following options:
+- **Home**: The landing page
+- **Courses**: View all courses
+- **Course Offerings**: Browse courses by year/term
+- **Coordinators**: View course coordinators
+- **Ratings**: View course ratings
+
+#### Course Browsing
+1. Go to the "Courses" or "Course Offerings" page
+2. Browse through available courses
+3. Click on a course to view its details
+
+#### Course Details
+When viewing a course, you can see:
+- Course ID
+- Block
+- Term
+- Institute
+- Language
+- ECTS credits
+- Course description
+
+#### Rating Courses
+1. Navigate to a course detail page
+2. Use the "Rate & Comment" form at the bottom of the page
+3. Enter:
+   - Your KU ID (e.g., zts900)
+   - Rating score (1 to 10)
+   - A comment
+4. Submit the form
+
+#### Viewing Ratings
+You can see all ratings for a course on its detail page.
+
+### Stopping the Application
+To stop the application, press `Ctrl+C` in the terminal where Docker Compose is running or use:
+```bash
+docker-compose down
+```
+
+### Resetting the Database
+If you need to reset the database, the application has an initialization function that automatically drops and recreates all tables. Simply restart the application to reset the database.
+
+## Technical Notes
+- The application uses Flask as the web framework
+- PostgreSQL is used for data storage
+- The application is containerized using Docker for easy deployment
+- Data for courses is stored in CSV files in the data directory
+- The entrypoint script (entrypoint.sh) starts Flask with the `--debug` flag for development purposes
