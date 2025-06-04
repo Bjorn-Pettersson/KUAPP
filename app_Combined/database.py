@@ -178,7 +178,7 @@ def init_db():
             row['last_modified'],
             row['term'],
             row['course_coordinator_name'],
-            2000 + int(row['term'][9:11])  # or your year logic
+            2000 + int(row['term'][1:3])  # or your year logic
         )
         cur.execute(
             f"""
