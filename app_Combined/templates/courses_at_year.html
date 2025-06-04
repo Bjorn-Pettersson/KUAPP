@@ -1,43 +1,37 @@
 {% extends "base.html" %}
 {% block title %}Courses{% endblock %}
 {% block content %}
-<title>courses:</title>
-
-<a href="{{ url_for('ratings.ratings') }}" class="register-link">Courses</a>
-
-<table>
-    <tr>
-        <th>Course ID</th>
-        <th>Course Name</th>
-        <th>Term</th>
-        <th>Blok</th>
-        <th>Average Rating</th>
-        <th>Rate this course</th>
-    </tr>
+<h1 class="mb-4">Course Offerings</h1>
+<table class="table table-striped table-bordered align-middle">
+    <thead class="table-dark">
+        <tr>
+            <th>Course ID</th>
+            <th>Course Name</th>
+            <th>Term</th>
+            <th>Blok</th>
+            <th>Average Rating</th>
+        </tr>
+    </thead>
+    <tbody>
     {% for course in courses %}
         <tr>
-            <td>{{ course.id }}</td>
+            <td>
+                <a href="{{ url_for('courses.course_detail', course_id=course.id) }}">
+                    {{ course.id }}
+                </a>
+            </td>
             <td>{{ course.name }}</td>
             <td>{{ course.term }}</td>
             <td>{{ course.blok }}</td>
             <td>
                 {% if course.avg_rating is not none %}
-                    {{ course.avg_rating|round(2) }}
+                    <span class="badge bg-success">{{ course.avg_rating|round(2) }}</span>
                 {% else %}
-                    No ratings
+                    <span class="text-muted">No ratings</span>
                 {% endif %}
-            </td>
-            <td>
-                <form method="POST" action="{{ url_for('courses_at_year.courses') }}">
-                    <input type="hidden" name="kursus_id" value="{{ course.id }}">
-                    <input type="hidden" name="term" value="{{ course.term }}">
-                    <input type="number" name="score" min="1" max="10" placeholder="Score" required>
-                    <input type="text" name="comment" placeholder="Comment">
-                    <input type="text" name="KU_ID" placeholder="ID">
-                    <input type="submit" value="Rate">
-                </form>
             </td>
         </tr>
     {% endfor %}
+    </tbody>
 </table>
 {% endblock %}

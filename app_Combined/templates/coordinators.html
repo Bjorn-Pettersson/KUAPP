@@ -1,33 +1,36 @@
 {% extends "base.html" %}
-{% block title %}Courses{% endblock %}
+{% block title %}Coordinators{% endblock %}
 {% block content %}
-<h1>Courses</h1>
-<a href="{{ url_for('courses.courses', sort='rating', desc='0') }}">Sort by Rating (Asc)</a> |
-<a href="{{ url_for('courses.courses', sort='rating', desc='1') }}">Sort by Rating (Desc)</a>
-<table class="table table-striped mt-3">
-    <thead>
+<h1 class="mb-4">Course Coordinators</h1>
+
+<table class="table table-striped table-bordered align-middle">
+    <thead class="table-dark">
         <tr>
-            <th>Course ID</th>
-            <th>Course Name</th>
-            <th>Description</th>
-            <th>Average Rating</th>
+            <th>Name</th>
+            <th>
+                <span style="display: flex; align-items: center; gap: 0.25em;">
+                    Average Course Rating
+                    <span style="display: flex; flex-direction: column; align-items: center; margin-left: 0.25em;">
+                        <a href="{{ url_for('coordinators.coordinators', sort='rating', desc='0') }}" title="Sort ascending" style="line-height: 1;">
+                            <span style="font-size:0.9em; color: #888;">&#9650;</span>
+                        </a>
+                        <a href="{{ url_for('coordinators.coordinators', sort='rating', desc='1') }}" title="Sort descending" style="line-height: 1;">
+                            <span style="font-size:0.9em; color: #888;">&#9660;</span>
+                        </a>
+                    </span>
+                </span>
+            </th>
         </tr>
     </thead>
     <tbody>
-    {% for course in courses %}
+    {% for coordinator in coordinators %}
         <tr>
+            <td>{{ coordinator.name }}</td>
             <td>
-                <a href="{{ url_for('courses.course_detail', course_id=course.id) }}">
-                    {{ course.id }}
-                </a>
-            </td>
-            <td>{{ course.name }}</td>
-            <td>{{ course.description }}</td>
-            <td>
-                {% if course.avg_rating is not none %}
-                    {{ course.avg_rating|round(2) }}
+                {% if coordinator.avg_rating is not none %}
+                    <span class="badge bg-success">{{ coordinator.avg_rating|round(2) }}</span>
                 {% else %}
-                    No ratings
+                    <span class="text-muted">No ratings</span>
                 {% endif %}
             </td>
         </tr>
