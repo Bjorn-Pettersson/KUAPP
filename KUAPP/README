@@ -13,7 +13,7 @@ This document explains how to compile the KU Courses web application from source
 1. **Clone or download the repository**
    ```bash
    git clone <repository-url>
-   cd app_Combined
+   cd KUAPP
    ```
 
 2. **Build and start the application using Docker Compose**
