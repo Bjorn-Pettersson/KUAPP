@@ -81,7 +81,7 @@ When viewing a course, you can see:
 4. Submit the form
 
 #### Viewing Ratings
-You can see all ratings for a course on its detail page.
+You can see all ratings for a course offering on its detail page - make sure to refresh the page after rating.
 
 ### Stopping the Application
 To stop the application, press `Ctrl+C` in the terminal where Docker Compose is running or use:
