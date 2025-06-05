@@ -38,7 +38,13 @@
                 </a>
             </td>
             <td>{{ course.name }}</td>
-            <td style="max-width: 600px; white-space: pre-line;">{{ course.description }}</td>
+            <td style="max-width: 600px; white-space: pre-line;">
+                {% if course.description|length > 400 %}
+                    {{ course.description[:400] }}...
+                {% else %}
+                    {{ course.description }}
+                {% endif %}
+            </td>
             <td>
                 {% if course.avg_rating is not none %}
                     <span class="badge bg-success">{{ course.avg_rating|round(2) }}</span>

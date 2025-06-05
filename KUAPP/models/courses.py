@@ -104,8 +104,10 @@ def get_course_by_id(course_id, term=None):
             FROM rating
             WHERE KURSUS_ID = %s AND term = %s
         """, (course_id, term))
-        avg_rating_row
+        avg_rating_row = cur.fetchone()
         conn.close()
+    if avg_rating_row:
+        avg_rating_row = avg_rating_row[0]
     if row:
         return CourseFull(row[0], row[1], row[2], row[3], row[4], row[5], row[6], row[7], row[8], avg_rating_row), ratings
     return None, None

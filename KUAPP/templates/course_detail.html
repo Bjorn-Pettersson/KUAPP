@@ -22,6 +22,13 @@
 <p><strong>Language:</strong> {{ course.sprog }}</p>
 <p><strong>ECTS:</strong> {{ course.ects }}</p>
 <p><strong>Description:</strong> {{ course.description }}</p>
+<p><strong>Average Rating:</strong>
+    {% if course.avg_rating is not none %}
+        {{ course.avg_rating|round(1) }}
+    {% else %}
+        No ratings
+    {% endif %}
+</p>
 
 <hr>
 <h2>Rate & Comment</h2>
